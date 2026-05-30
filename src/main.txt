@@ -1,0 +1,90 @@
+use std::fmt;
+
+// 1. Definimos un Trait que actúa como la "interfaz" para calcular el pago
+trait Calculable {
+    fn calcular_pago(&self) -> f32;
+    fn obtener_nombre(&self) -> &str;
+}
+
+// 2. Estructura Empleado
+struct Empleado {
+    nombre: String,
+    salario_base: f32,
+}
+
+impl Empleado {
+    // El equivalente al __init__
+    fn new(nombre: &str, salario_base: f32) -> Self {
+        Empleado {
+            nombre: nombre.to_string(),
+            salario_base,
+        }
+    }
+}
+
+// Implementamos el Trait para Empleado
+impl Calculable for Empleado {
+    fn calcular_pago(&self) -> f32 {
+        self.salario_base
+    }
+
+    fn obtener_nombre(&self) -> &str {
+        &self.nombre
+    }
+}
+
+// El equivalente al __str__ de Python se hace implementando el trait Display
+impl fmt::Display for Empleado {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Empleado: {} | y con salario base: {}", self.nombre, self.salario_base)
+    }
+}
+
+// 3. Estructura Gerente (En lugar de heredar, incluye a Empleado por "composición")
+struct Gerente {
+    empleado: Empleado,
+    bono: f32,
+}
+
+impl Gerente {
+    // El equivalente al __init__ del Gerente
+    fn new(nombre: &str, salario_base: f32, bono: f32) -> Self {
+        Gerente {
+            empleado: Empleado::new(nombre, salario_base),
+            bono,
+        }
+    }
+}
+
+// Implementamos el Trait para Gerente
+impl Calculable for Gerente {
+    fn calcular_pago(&self) -> f32 {
+        // El equivalente al super().calcular_pago()
+        self.empleado.calcular_pago() + self.bono
+    }
+
+    fn obtener_nombre(&self) -> &str {
+        self.empleado.obtener_nombre()
+    }
+}
+
+// El equivalente al __str__ para Gerente
+impl fmt::Display for Gerente {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // Usamos el Display del empleado interno y le sumamos el bono
+        write!(f, "{} | Bono:${}", self.empleado, self.bono)
+    }
+}
+
+// 4. Función Principal
+fn main() {
+    println!("------ Registro de Personal -------");
+
+    let emp1 = Empleado::new("Carlitos", 1000.0);
+    println!("{}", emp1); // Llama automáticamente a Display
+    println!("Pago Total de {}: ${}\n", emp1.obtener_nombre(), emp1.calcular_pago());
+
+    let gerente1 = Gerente::new("Ania", 2000.0, 600.0);
+    println!("{}", gerente1); // Llama automáticamente a Display
+    println!("Pago Total de {}: ${}", gerente1.obtener_nombre(), gerente1.calcular_pago());
+}
