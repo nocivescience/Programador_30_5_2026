@@ -88,3 +88,115 @@ fn main() {
     println!("{}", gerente1); // Llama automáticamente a Display
     println!("Pago Total de {}: ${}", gerente1.obtener_nombre(), gerente1.calcular_pago());
 }
+
+
+
+use std::fmt;
+
+// 1. Pavimentamos el camino: El contrato de combate
+trait Atacante {
+    fn calcular_danio(&self) -> f32;
+    fn obtener_nombre(&self) -> &str; // Retorna la referencia al texto original
+}
+
+// 2. Estructura Base: Guerrero
+struct Guerrero {
+    nombre: String,
+    fuerza_base: f32,
+}
+
+impl Guerrero {
+    // El constructor que retorna 'Self' (alias de Guerrero)
+    fn new(nombre: &str, fuerza_base: f32) -> Self {
+        Guerrero {
+            nombre: nombre.to_string(),
+            fuerza_base,
+        }
+    }
+}
+
+// Implementamos el camino pavimentado para el Guerrero
+impl Atacante for Guerrero {
+    fn calcular_danio(&self) -> f32 {
+        self.fuerza_base // Expresión de retorno automático (sin ';' ni 'return')
+    }
+
+    fn obtener_nombre(&self) -> &str {
+        &self.nombre // Prestamos la referencia del String interno
+    }
+}
+
+// Implementamos Display para poder usar println!("{}", guerrero)
+impl fmt::Display for Guerrero {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "⚔️  Guerrero [{}] (Fuerza: {})", self.nombre, self.fuerza_base)
+    }
+}
+
+// 3. Composición: El Mago contiene un Guerrero adentro
+struct Mago {
+    cuerpo: Guerrero, // Composición en lugar de herencia
+    mana: f32,
+    multiplicador_magico: f32,
+}
+
+impl Mago {
+    // Constructor que retorna 'Self' (alias de Mago)
+    fn new(nombre: &str, fuerza_base: f32, mana: f32, multiplicador_magico: f32) -> Self {
+        Mago {
+            cuerpo: Guerrero::new(nombre, fuerza_base), // Inicializamos el guerrero interno
+            mana,
+            multiplicador_magico,
+        }
+    }
+}
+
+// Implementamos el camino pavimentado para el Mago
+impl Atacante for Mago {
+    fn calcular_danio(&self) -> f32 {
+        // Reutilizamos el cálculo del guerrero interno y le sumamos el poder mágico
+        self.cuerpo.calcular_danio() + (self.mana * self.multiplicador_magico)
+    }
+
+    fn obtener_nombre(&self) -> &str {
+        self.cuerpo.obtener_nombre() // Delegamos la responsabilidad al guerrero interno
+    }
+}
+
+// Implementamos Display para el Mago
+impl fmt::Display for Mago {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f, 
+            "🔮 Mago avanzado -> {} | 🧪 Maná: {} | ⚡ Multiplicador: x{}", 
+            self.cuerpo, self.mana, self.multiplicador_magico
+        )
+    }
+}
+
+// 4. Función principal para ejecutar la acción
+fn main() {
+    println!("-------- Simulación de Batalla --------");
+
+    // Creamos las instancias
+    let g1 = Guerrero::new("Thorin", 150.0);
+    let m1 = Mago::new("Gandalf", 80.0, 50.0, 2.5);
+
+    // Probamos el trait Display
+    println!("{}", g1);
+    println!("{}", m1);
+    println!("---------------------------------------");
+
+    // Ejecutamos los ataques usando los métodos del Trait
+    ejecutar_ataque(&g1);
+    ejecutar_ataque(&m1);
+}
+
+// Esta función acepta CUALQUIER cosa que haya pavimentado el camino de 'Atacante'
+fn ejecutar_ataque<T: Atacante>(personaje: &T) {
+    println!(
+        "💥 ¡{} ataca ferozmente causando {:.2} de daño!", 
+        personaje.obtener_nombre(), 
+        personaje.calcular_danio()
+    );
+}

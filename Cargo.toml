@@ -4,3 +4,15 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+
+[[bin]]
+name = "p1"
+path = "src/p1.rs"
+
+[[bin]]
+name = "p2"
+path = "src/p2.rs"
+
+[[bin]]
+name = "p3"
+path = "src/p3.rs"
